@@ -13,20 +13,27 @@ router.get("/assigned-clues", authenticate, async (req, res) => {
     let user = await User.findOne({ email: email });
     if (!user) user = await User.findOne({ mobile: email });
 
-    if (!user) {
+    if (!user)
       return res
         .status(404)
         .json({ success: false, message: "User not found" });
-    }
 
     const team = await Team.findById(user.team);
-    if (!team) {
+    if (!team)
       return res
         .status(404)
         .json({ success: false, message: "Team not found" });
+
+    if (!team.clueHuntOrder || team.clueHuntOrder.length === 0) {
+      return res.status(403).json({
+        success: false,
+        message: "The hunt hasn't started yet or your clues aren't assigned.",
+      });
     }
 
-    const assignedClues = clues.slice(0, 5).map((c) => ({ clue: c.question }));
+    const assignedClues = team.clueHuntOrder.map((index) => ({
+      clue: clues[index].question,
+    }));
 
     res.status(200).json({ success: true, assignedClues });
   } catch (error) {
