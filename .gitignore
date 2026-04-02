@@ -1,0 +1,16 @@
+# Ignore node_modules in any directory
+node_modules/
+**/node_modules/
+
+# Ignore environment files in any directory
+.env
+.env.local
+.env.*
+**/.env
+
+# Mac system files
+.DS_Store
+
+# Neovim Swap Files
+*.swp
+*.swo
