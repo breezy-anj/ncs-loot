@@ -6,7 +6,12 @@ import User from "../models/User.js";
 const router = express.Router();
 
 router.get("/clues", authenticate, (req, res) => {
-  res.status(200).json({ success: true, clues });
+  const safeClues = clues.map((clue) => ({
+    id: clue.id,
+    text: clue.text,
+  }));
+
+  res.status(200).json({ success: true, clues: safeClues });
 });
 
 router.post("/submit", authenticate, async (req, res) => {
@@ -47,6 +52,7 @@ router.post("/submit", authenticate, async (req, res) => {
   }
 });
 
+// 3. Fetch the Leaderboard data
 router.get("/leaderboard", async (req, res) => {
   try {
     const evaluatedCount = await User.countDocuments({ isEvaluated: true });
