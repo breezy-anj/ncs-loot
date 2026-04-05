@@ -4,8 +4,7 @@ import User from "../models/User.js";
 
 dotenv.config();
 
-const MASTER_ANSWER = "11-apple-blue";
-// this key is hardcoded. Must be changed later after dating clues and their answers. CHOWDKI
+const MASTER_ANSWERS = ["11", "apple", "blue"];
 
 const evaluate = async () => {
   try {
@@ -13,26 +12,31 @@ const evaluate = async () => {
     console.log("Connected to DB. Evaluating Loot submissions...\n");
 
     const users = await User.find({});
+    let processed = 0;
 
     for (let user of users) {
-      if (!user.submittedAnswer) {
-        console.log(`Player: ${user.name} | Status: NO SUBMISSION`);
-        continue;
+      if (!user.submittedAnswer) continue;
+
+      const userParts = user.submittedAnswer.toLowerCase().trim().split("-");
+      let correctCount = 0;
+
+      for (let i = 0; i < MASTER_ANSWERS.length; i++) {
+        if (userParts[i] && userParts[i].trim() === MASTER_ANSWERS[i]) {
+          correctCount++;
+        }
       }
 
-      const submitted = user.submittedAnswer.toLowerCase().trim();
+      user.correctClues = correctCount;
+      user.isEvaluated = true;
+      await user.save();
 
-      if (submitted === MASTER_ANSWER) {
-        console.log(
-          `Player: ${user.name} | Status: PASSED ✅ | Time: ${user.submissionTime}`,
-        );
-      } else {
-        console.log(
-          `Player: ${user.name} | Status: FAILED ❌ | Guessed: ${submitted}`,
-        );
-      }
+      console.log(
+        `Operative: ${user.name} | Score: ${correctCount}/${MASTER_ANSWERS.length}`,
+      );
+      processed++;
     }
 
+    console.log(`\nEvaluation complete. ${processed} operatives graded.`);
     process.exit(0);
   } catch (error) {
     console.error(error);

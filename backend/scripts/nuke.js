@@ -1,16 +1,18 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import User from "../models/User.js";
+
 dotenv.config();
 
 mongoose.connect(process.env.MONGO_URI).then(async () => {
-  console.log("Connected to Atlas.");
+  console.log("Connected to Atlas. Initiating total wipe...");
   try {
-    await mongoose.connection.db.dropCollection("users");
+    const result = await User.deleteMany({});
     console.log(
-      "SUCCESS: 'users' collection dropped. The ghost index is dead.",
+      `SUCCESS: ${result.deletedCount} operatives purged from the database.`,
     );
   } catch (err) {
-    console.log("Note: Collection already dropped or doesn't exist.");
+    console.log("Error wiping database:", err);
   }
   process.exit(0);
 });

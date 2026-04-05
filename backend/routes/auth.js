@@ -61,6 +61,7 @@ router.post("/login", async (req, res) => {
       name: user.name,
       zealId: user.zealId,
       hasSubmitted: !!user.submittedAnswer,
+      submittedAnswer: user.submittedAnswer || null,
     };
 
     res.status(200).json({ success: true, token, user: userData });
@@ -83,6 +84,7 @@ router.get("/me", authenticate, async (req, res) => {
         name: user.name,
         zealId: user.zealId,
         hasSubmitted: !!user.submittedAnswer,
+        submittedAnswer: user.submittedAnswer || null,
       },
     });
   } catch (err) {
