@@ -1,49 +1,45 @@
-import { useState } from 'react';
-import { API_BASE } from '../config';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { API_BASE } from "../config";
 
-/**
- * Auth
- * Props:
- *   mode          – 'login' | 'register'
- *   onAuthSuccess – called with { token, user } after a successful login
- *   onBack        – navigates back to home
- *   onNavigate    – used to switch between login/register views
- */
-const Auth = ({ mode, onAuthSuccess, onBack, onNavigate }) => {
-  const isLogin = mode === 'login';
+const Auth = ({ mode }) => {
+  const isLogin = mode === "login";
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
-    name: '',
-    zealId: '',
-    year: '',
-    admissionNumber: '',
-    password: '',
+    name: "",
+    zealId: "",
+    year: "",
+    admissionNumber: "",
+    password: "",
   });
 
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState('');
-  const [success, setSuccess]   = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleChange = (e) => {
-    setError('');
+    setError("");
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
-    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-    const payload  = isLogin
+    const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
+    const payload = isLogin
       ? { zealId: formData.zealId, password: formData.password }
       : formData;
 
     try {
       const res = await fetch(`${API_BASE}${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
@@ -51,17 +47,17 @@ const Auth = ({ mode, onAuthSuccess, onBack, onNavigate }) => {
 
       if (data.success) {
         if (isLogin) {
-          // Hand full auth payload (token + user) back to App
-          onAuthSuccess({ token: data.token, user: data.user });
+          login(data.token, data.user);
+          navigate("/dashboard"); // Direct route to dashboard
         } else {
-          setSuccess('IDENTITY_CREATED — PROCEED TO LOGIN');
-          setTimeout(() => onNavigate('login'), 1800);
+          setSuccess("IDENTITY_CREATED — PROCEED TO LOGIN");
+          setTimeout(() => navigate("/login"), 1800);
         }
       } else {
-        setError(data.message || 'ACCESS_DENIED');
+        setError(data.message || "ACCESS_DENIED");
       }
     } catch {
-      setError('TERMINAL_OFFLINE — CHECK_CONNECTION');
+      setError("TERMINAL_OFFLINE — CHECK_CONNECTION");
     } finally {
       setLoading(false);
     }
@@ -70,21 +66,22 @@ const Auth = ({ mode, onAuthSuccess, onBack, onNavigate }) => {
   return (
     <div className="auth-wrapper">
       <div className="auth-card">
-        <button className="auth-back" onClick={onBack}>
+        <button className="auth-back" onClick={() => navigate("/")}>
           ← [ BACK_TO_SURFACE ]
         </button>
 
         <h2 className="auth-title cinzel">
-          {isLogin ? 'IDENTITY_VERIFICATION' : 'CREATE_OPERATIVE'}
+          {isLogin ? "IDENTITY_VERIFICATION" : "CREATE_OPERATIVE"}
         </h2>
+
         <p className="auth-mode-line">
           {isLogin
-            ? 'Enter your credentials to access the vault.'
-            : 'Register to participate in the hunt.'}
+            ? "Enter your credentials to access the vault."
+            : "Register to participate in the hunt."}
         </p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
-          {/* ── Zeal ID (always shown) ── */}
+          {/* Form fields remain exactly the same as your original code */}
           <div className="form-row">
             <div className="field full">
               <label>ZEAL_ID</label>
@@ -100,7 +97,6 @@ const Auth = ({ mode, onAuthSuccess, onBack, onNavigate }) => {
             </div>
           </div>
 
-          {/* ── Register-only fields ── */}
           {!isLogin && (
             <>
               <div className="form-row">
@@ -116,7 +112,6 @@ const Auth = ({ mode, onAuthSuccess, onBack, onNavigate }) => {
                   />
                 </div>
               </div>
-
               <div className="form-row">
                 <div className="field">
                   <label>YEAR</label>
@@ -144,7 +139,6 @@ const Auth = ({ mode, onAuthSuccess, onBack, onNavigate }) => {
             </>
           )}
 
-          {/* ── Password ── */}
           <div className="form-row">
             <div className="field full">
               <label>ACCESS_KEY</label>
@@ -155,32 +149,39 @@ const Auth = ({ mode, onAuthSuccess, onBack, onNavigate }) => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                autoComplete={isLogin ? 'current-password' : 'new-password'}
+                autoComplete={isLogin ? "current-password" : "new-password"}
               />
             </div>
           </div>
 
-          {/* ── Feedback ── */}
-          {error   && <p className="auth-error">⚠ {error}</p>}
+          {error && <p className="auth-error">⚠ {error}</p>}
           {success && <p className="auth-success">✓ {success}</p>}
 
-          <button type="submit" className="submit-btn cinzel" disabled={loading}>
+          <button
+            type="submit"
+            className="submit-btn cinzel"
+            disabled={loading}
+          >
             {loading
-              ? 'PROCESSING...'
+              ? "PROCESSING..."
               : isLogin
-              ? 'UNLOCK_VAULT'
-              : 'CREATE_ALIAS'}
+                ? "UNLOCK_VAULT"
+                : "CREATE_ALIAS"}
           </button>
         </form>
 
         <div className="auth-toggle">
           {isLogin ? (
-            <>First time at these ruins?&nbsp;
-              <span onClick={() => onNavigate('register')}>[ CREATE_ALIAS ]</span>
+            <>
+              First time at these ruins?{" "}
+              <span onClick={() => navigate("/register")}>
+                [ CREATE_ALIAS ]
+              </span>
             </>
           ) : (
-            <>Already an operative?&nbsp;
-              <span onClick={() => onNavigate('login')}>[ LOGIN ]</span>
+            <>
+              Already an operative?{" "}
+              <span onClick={() => navigate("/login")}>[ LOGIN ]</span>
             </>
           )}
         </div>

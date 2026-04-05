@@ -1,115 +1,109 @@
-import { useState, useEffect } from 'react';
-import './App.css';
+import { useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import "./App.css";
 
-import SplashScreen from './components/SplashScreen';
-import Navbar       from './components/Navbar';
-import Home         from './pages/Home';
-import Auth         from './pages/Auth';
-import Dashboard    from './pages/Dashboard';
+import About from "./pages/About";
+import SplashScreen from "./components/SplashScreen";
+import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
+import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
+import Leaderboard from "./pages/Leaderboard";
 
-function App() {
+// Protected Route Wrapper - Kicks unauthenticated users to login
+const ProtectedRoute = ({ children }) => {
+  const { token, loading } = useAuth();
+  if (loading) return null;
+  return token ? children : <Navigate to="/login" />;
+};
+
+// Public Route Wrapper - Kicks logged-in users straight to the dashboard
+const PublicRoute = ({ children }) => {
+  const { token, loading } = useAuth();
+  if (loading) return null;
+  return !token ? children : <Navigate to="/dashboard" />;
+};
+
+const AppContent = () => {
   const [splashDone, setSplashDone] = useState(false);
-  const [view, setView]             = useState('home');   // 'home' | 'login' | 'register' | 'dashboard'
-  const [user, setUser]             = useState(null);
-  const [token, setToken]           = useState(null);
+  const { token, user, logout } = useAuth();
 
-  // ── Restore session on mount ─────────────────
-  useEffect(() => {
-    const savedToken = localStorage.getItem('loot_token');
-    const savedUser  = localStorage.getItem('loot_user');
-
-    if (savedToken && savedUser) {
-      try {
-        setToken(savedToken);
-        setUser(JSON.parse(savedUser));
-        setView('dashboard');
-      } catch {
-        // Corrupt data — wipe it
-        localStorage.removeItem('loot_token');
-        localStorage.removeItem('loot_user');
-      }
-    }
-  }, []);
-
-  // ── Auth success (login only) ────────────────
-  // Auth.jsx calls this with { token, user } after a successful login
-  const handleAuthSuccess = ({ token: newToken, user: newUser }) => {
-    localStorage.setItem('loot_token', newToken);
-    localStorage.setItem('loot_user', JSON.stringify(newUser));
-    setToken(newToken);
-    setUser(newUser);
-    setView('dashboard');
-  };
-
-  // ── Logout ───────────────────────────────────
-  const handleLogout = () => {
-    localStorage.removeItem('loot_token');
-    localStorage.removeItem('loot_user');
-    setToken(null);
-    setUser(null);
-    setView('home');
-  };
-
-  // ── Navigation guard ─────────────────────────
-  const handleNavigate = (target) => {
-    // Prevent navigating to dashboard without being logged in
-    if (target === 'dashboard' && !token) {
-      setView('login');
-      return;
-    }
-    setView(target);
-  };
-
-  // ── Splash ───────────────────────────────────
+  // ── Splash Screen ────────────────────────────
   if (!splashDone) {
     return <SplashScreen onFinished={() => setSplashDone(true)} />;
   }
 
+  // ── Main Layout ──────────────────────────────
   return (
     <div className="app-shell">
-      {/* Ambient layers */}
-      <div className="bg-grid"     aria-hidden="true" />
+      {/* Ambient background layers */}
+      <div className="bg-grid" aria-hidden="true" />
       <div className="bg-vignette" aria-hidden="true" />
       <div className="bg-scanline" aria-hidden="true" />
 
-      <Navbar
-        isLoggedIn={!!token}
-        userName={user?.zealId}
-        onNavigate={handleNavigate}
-        onLogout={handleLogout}
-      />
+      <Navbar isLoggedIn={!!token} userName={user?.zealId} onLogout={logout} />
 
       <main className="app-content">
-        {view === 'home' && (
-          <Home onNavigate={handleNavigate} />
-        )}
-
-        {view === 'login' && (
-          <Auth
-            mode="login"
-            onAuthSuccess={handleAuthSuccess}
-            onBack={() => handleNavigate('home')}
-            onNavigate={handleNavigate}
+        <Routes>
+          {/* Public Routes */}
+          <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <Home />
+              </PublicRoute>
+            }
           />
-        )}
-
-        {view === 'register' && (
-          <Auth
-            mode="register"
-            onAuthSuccess={handleAuthSuccess}
-            onBack={() => handleNavigate('home')}
-            onNavigate={handleNavigate}
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Auth mode="login" />
+              </PublicRoute>
+            }
           />
-        )}
-
-        {view === 'dashboard' && token && (
-          <Dashboard
-            user={user}
-            onLogout={handleLogout}
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <Auth mode="register" />
+              </PublicRoute>
+            }
           />
-        )}
+
+          {/* Protected Area */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Unrestricted Pages */}
+          <Route path="/about" element={<About />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+        </Routes>
       </main>
     </div>
+  );
+};
+
+function App() {
+  return (
+    // The AuthProvider must wrap the Router so navigation guards can access the state
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
   );
 }
 

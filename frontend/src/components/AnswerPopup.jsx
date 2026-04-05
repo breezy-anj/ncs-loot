@@ -1,35 +1,38 @@
-import { useState } from 'react';
-import { API_BASE } from '../config';
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { API_BASE } from "../config";
 
 /**
  * AnswerPopup
  * Props:
- *   onClose   – called when the user dismisses the popup
- *   onSuccess – called when the answer is successfully submitted
+ * onClose   – called when the user dismisses the popup
+ * onSuccess – called when the answer is successfully submitted
  */
 const AnswerPopup = ({ onClose, onSuccess }) => {
-  const [answer, setAnswer] = useState('');
+  const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [confirmed, setConfirmed] = useState(false);
+
+  // Get token securely from context
+  const { token } = useAuth();
 
   const handleSubmit = async () => {
     const trimmed = answer.trim();
     if (!trimmed) {
-      setError('ANSWER_FIELD_EMPTY');
+      setError("ANSWER_FIELD_EMPTY");
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const token = localStorage.getItem('loot_token');
       const res = await fetch(`${API_BASE}/api/game/submit`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Used context token here
         },
         body: JSON.stringify({ finalAnswer: trimmed }),
       });
@@ -43,22 +46,26 @@ const AnswerPopup = ({ onClose, onSuccess }) => {
           onClose();
         }, 2000);
       } else {
-        setError(data.message || 'SUBMISSION_FAILED — RETRY');
+        setError(data.message || "SUBMISSION_FAILED — RETRY");
       }
     } catch {
-      setError('TERMINAL_OFFLINE — CHECK_CONNECTION');
+      setError("TERMINAL_OFFLINE — CHECK_CONNECTION");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="popup-overlay" onClick={(e) => e.target === e.currentTarget && !loading && onClose()}>
+    <div
+      className="popup-overlay"
+      onClick={(e) => e.target === e.currentTarget && !loading && onClose()}
+    >
       <div className="popup-card">
         <h2 className="popup-title cinzel">SUBMIT_FINAL_ANSWER</h2>
 
         <p className="popup-note">
-          Combine all clue answers in order, separated by a dash.<br />
+          Combine all clue answers in order, separated by a dash.
+          <br />
           <strong>FORMAT: answer1-answer2-answer3</strong>
         </p>
 
@@ -66,7 +73,9 @@ const AnswerPopup = ({ onClose, onSuccess }) => {
           <div className="popup-confirmed">
             <span className="popup-confirmed-icon">✓</span>
             <p className="popup-confirmed-text cinzel">ANSWER_LOCKED_IN</p>
-            <p className="popup-confirmed-sub">Your submission has been recorded.</p>
+            <p className="popup-confirmed-sub">
+              Your submission has been recorded.
+            </p>
           </div>
         ) : (
           <>
@@ -77,8 +86,11 @@ const AnswerPopup = ({ onClose, onSuccess }) => {
               type="text"
               placeholder="ENTER_YOUR_ANSWER_HERE..."
               value={answer}
-              onChange={(e) => { setAnswer(e.target.value); setError(''); }}
-              onKeyDown={(e) => e.key === 'Enter' && !loading && handleSubmit()}
+              onChange={(e) => {
+                setAnswer(e.target.value);
+                setError("");
+              }}
+              onKeyDown={(e) => e.key === "Enter" && !loading && handleSubmit()}
               autoFocus
             />
 
@@ -88,10 +100,14 @@ const AnswerPopup = ({ onClose, onSuccess }) => {
                 onClick={handleSubmit}
                 disabled={loading}
               >
-                {loading ? 'TRANSMITTING...' : 'LOCK_IN_ANSWER'}
+                {loading ? "TRANSMITTING..." : "LOCK_IN_ANSWER"}
               </button>
 
-              <button className="popup-abort-btn" onClick={onClose} disabled={loading}>
+              <button
+                className="popup-abort-btn"
+                onClick={onClose}
+                disabled={loading}
+              >
                 [ ABORT_MISSION ]
               </button>
             </div>

@@ -1,7 +1,11 @@
-const Navbar = ({ isLoggedIn, userName, onNavigate, onLogout }) => {
+import { useNavigate } from "react-router-dom";
+
+const Navbar = ({ isLoggedIn, userName, onLogout }) => {
+  const navigate = useNavigate();
+
   return (
     <nav className="navbar">
-      <span className="nav-brand cinzel" onClick={() => onNavigate('home')}>
+      <span className="nav-brand cinzel" onClick={() => navigate("/")}>
         LOOT
       </span>
 
@@ -11,10 +15,18 @@ const Navbar = ({ isLoggedIn, userName, onNavigate, onLogout }) => {
       </div>
 
       <div className="nav-actions">
+        {/* LEADERBOARD BUTTON */}
+        <button className="nav-btn" onClick={() => navigate("/leaderboard")}>
+          [ STANDINGS ]
+        </button>
+
         {isLoggedIn ? (
           <>
-            <span className="nav-btn" style={{ cursor: 'default', color: 'var(--text-dim)' }}>
-              {userName || 'OPERATIVE'}
+            <span
+              className="nav-btn"
+              style={{ cursor: "default", color: "var(--text-dim)" }}
+            >
+              {userName || "OPERATIVE"}
             </span>
             <button className="nav-btn danger" onClick={onLogout}>
               [ LOGOUT ]
@@ -22,10 +34,10 @@ const Navbar = ({ isLoggedIn, userName, onNavigate, onLogout }) => {
           </>
         ) : (
           <>
-            <button className="nav-btn" onClick={() => onNavigate('login')}>
+            <button className="nav-btn" onClick={() => navigate("/login")}>
               [ LOGIN ]
             </button>
-            <button className="nav-btn" onClick={() => onNavigate('register')}>
+            <button className="nav-btn" onClick={() => navigate("/register")}>
               [ REGISTER ]
             </button>
           </>
