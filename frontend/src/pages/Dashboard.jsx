@@ -21,7 +21,7 @@ const Dashboard = () => {
         });
 
         if (res.status === 401) {
-          logout();
+          logout(); // Invalid token, kick them out
           return;
         }
 
@@ -43,7 +43,12 @@ const Dashboard = () => {
   }, [token, logout]);
 
   const handleSubmitSuccess = (answerString) => {
-    updateSubmissionStatus(answerString);
+    const updatedUser = {
+      ...user,
+      hasSubmitted: true,
+      submittedAnswer: answerString,
+    };
+    syncUser(updatedUser); //
     setShowPopup(false);
   };
 
@@ -89,21 +94,16 @@ const Dashboard = () => {
               <p className="panel-sub">
                 Solve each clue — combine answers to unlock the vault.
               </p>
-
-              {user?.submittedAnswer && (
-                <p
-                  className="auth-success"
-                  style={{ marginTop: "1rem", display: "inline-block" }}
-                >
-                  CURRENT TARGET: {user.submittedAnswer}
-                </p>
-              )}
             </div>
             <button
               className="final-submit-btn"
               onClick={() => setShowPopup(true)}
+              disabled={hasSubmitted}
+              title={
+                hasSubmitted ? "Already submitted" : "Submit your final answer"
+              }
             >
-              {hasSubmitted ? "[ OVERRIDE_ANSWER ]" : "[ SUBMIT_FINAL_ANSWER ]"}
+              {hasSubmitted ? "✓ SUBMITTED" : "[ SUBMIT_FINAL_ANSWER ]"}
             </button>
           </div>
 

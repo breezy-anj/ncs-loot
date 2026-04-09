@@ -20,11 +20,13 @@ const evaluate = async () => {
     for (let user of users) {
       if (!user.submittedAnswer) continue;
 
+      // Split the user's string by dash
       const userParts = user.submittedAnswer.split("-");
       let correctCount = 0;
 
       for (let i = 0; i < MASTER_ANSWERS.length; i++) {
         if (userParts[i]) {
+          // Force lowercase and strip ALL spaces from the user's input before comparing
           const cleanUserPart = userParts[i].toLowerCase().replace(/\s+/g, "");
           if (cleanUserPart === MASTER_ANSWERS[i]) {
             correctCount++;

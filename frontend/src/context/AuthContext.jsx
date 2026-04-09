@@ -36,21 +36,14 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  const updateSubmissionStatus = (answerString) => {
-    if (user) {
-      const updatedUser = {
-        ...user,
-        hasSubmitted: true,
-        submittedAnswer: answerString,
-      };
-      setUser(updatedUser);
-      localStorage.setItem("loot_user", JSON.stringify(updatedUser));
-    }
+  const syncUser = (updatedUserData) => {
+    setUser(updatedUserData);
+    localStorage.setItem("loot_user", JSON.stringify(updatedUserData));
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, token, loading, login, logout, updateSubmissionStatus }}
+      value={{ user, token, loading, login, logout, syncUser }}
     >
       {children}
     </AuthContext.Provider>

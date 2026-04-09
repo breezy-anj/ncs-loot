@@ -76,7 +76,6 @@ const AppContent = () => {
               </PublicRoute>
             }
           />
-
           {/* Protected Area */}
           <Route
             path="/dashboard"
@@ -86,10 +85,9 @@ const AppContent = () => {
               </ProtectedRoute>
             }
           />
-
           {/* Unrestricted Pages */}
           <Route path="/about" element={<About />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />s{" "}
         </Routes>
       </main>
     </div>

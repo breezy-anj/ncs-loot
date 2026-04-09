@@ -1,24 +1,26 @@
 import jwt from "jsonwebtoken";
 
 const authenticate = (req, res, next) => {
+  const authHeader = req.header("Authorization");
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      success: false,
+      error: "Access denied. Invalid or missing token.",
+    });
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+
   try {
-    const token = req.header("Authorization")?.replace("Bearer ", "");
-
-    if (!token) {
-      return res
-        .status(401)
-        .json({ success: false, error: "Access denied. No token provided." });
-    }
-
-    const secretKey = process.env.JWT_SECRET;
-    const decoded = jwt.verify(token, secretKey);
-
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
-
     next();
   } catch (error) {
-    console.error("Authentication error:", error);
-    res.status(401).json({ success: false, error: "Invalid token." });
+    console.error("JWT Verification Error:", error.message);
+    res
+      .status(401)
+      .json({ success: false, error: "Session expired or invalid." });
   }
 };
 
