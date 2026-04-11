@@ -9,12 +9,9 @@ const UserSchema = new mongoose.Schema({
 
   // Game Data
   firstLogin: { type: Date },
-  submittedAnswer: { type: String },
-  submissionTime: { type: Date },
-
-  // Post-Evaluation Data
-  isEvaluated: { type: Boolean, default: false },
-  correctClues: { type: Number, default: 0 },
+  currentLevel: { type: Number, default: 0 },
+  lastSolveTime: { type: Date },
+  completedAt: { type: Date },
 });
 
 export default mongoose.model("User", UserSchema, "operatives");

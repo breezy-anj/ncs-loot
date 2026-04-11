@@ -7,19 +7,22 @@ dotenv.config();
 const reset = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    console.log("Connected to DB. Reverting evaluation state...");
+    console.log("Connected to DB. Resetting all operative progress...");
 
     const result = await User.updateMany(
       {},
-      { $set: { isEvaluated: false, correctClues: 0 } },
+      {
+        $set: { currentLevel: 0 },
+        $unset: { lastSolveTime: 1, completedAt: 1 },
+      },
     );
 
     console.log(
-      `SUCCESS: Reverted ${result.modifiedCount} operatives to pre-evaluation state.`,
+      `SUCCESS: Reverted ${result.modifiedCount} operatives to Level 0.`,
     );
     process.exit(0);
   } catch (error) {
-    console.error(error);
+    console.error("Reset failed:", error);
     process.exit(1);
   }
 };

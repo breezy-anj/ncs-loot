@@ -17,6 +17,7 @@ router.post("/register", async (req, res) => {
       password: hashedPassword,
       year,
       admissionNumber,
+      currentLevel: 0, // Initialize at level 0
     });
 
     res.status(201).json({ success: true, message: "Operative created." });
@@ -56,12 +57,12 @@ router.post("/login", async (req, res) => {
       process.env.JWT_SECRET,
     );
 
+    // Cleaned up payload
     const userData = {
       id: user._id,
       name: user.name,
       zealId: user.zealId,
-      hasSubmitted: !!user.submittedAnswer,
-      submittedAnswer: user.submittedAnswer || null,
+      currentLevel: user.currentLevel || 0,
     };
 
     res.status(200).json({ success: true, token, user: userData });
@@ -83,8 +84,7 @@ router.get("/me", authenticate, async (req, res) => {
       user: {
         name: user.name,
         zealId: user.zealId,
-        hasSubmitted: !!user.submittedAnswer,
-        submittedAnswer: user.submittedAnswer || null,
+        currentLevel: user.currentLevel || 0,
       },
     });
   } catch (err) {

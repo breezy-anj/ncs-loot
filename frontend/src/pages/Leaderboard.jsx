@@ -59,19 +59,12 @@ const Leaderboard = () => {
         >
           ⚠ {error}
         </p>
-      ) : !isActive ? (
+      ) : !isActive || board.length === 0 ? (
         <div
           className="no-clues"
           style={{ maxWidth: "600px", margin: "0 auto" }}
         >
-          <p className="blink">RESULTS YET TO BE EVALUATED</p>
-        </div>
-      ) : board.length === 0 ? (
-        <div
-          className="no-clues"
-          style={{ maxWidth: "600px", margin: "0 auto" }}
-        >
-          <p>NO QUALIFIED OPERATIVES FOUND.</p>
+          <p className="blink">NO QUALIFIED OPERATIVES FOUND YET.</p>
         </div>
       ) : (
         <div
@@ -102,14 +95,13 @@ const Leaderboard = () => {
                 <th style={{ padding: "1rem" }}>RANK</th>
                 <th style={{ padding: "1rem" }}>OPERATIVE</th>
                 <th style={{ padding: "1rem" }}>ROLL_NO</th>
-                <th style={{ padding: "1rem" }}>SCORE</th>
-                <th style={{ padding: "1rem" }}>TIME_LOCKED</th>
+                <th style={{ padding: "1rem" }}>PHASE</th>
+                <th style={{ padding: "1rem" }}>LAST_SOLVE</th>
               </tr>
             </thead>
             <tbody>
               {board.map((user, index) => {
-                // Safely handle missing dates to prevent crashes
-                const date = new Date(user.submissionTime || Date.now());
+                const date = new Date(user.lastSolveTime || Date.now());
                 const formattedTime = `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}:${date.getSeconds().toString().padStart(2, "0")}`;
 
                 return (
@@ -127,7 +119,7 @@ const Leaderboard = () => {
                       {user.admissionNumber || "N/A"}
                     </td>
                     <td style={{ padding: "1rem", color: "var(--neon)" }}>
-                      {user.correctClues || 0}
+                      {user.currentLevel || 0}
                     </td>
                     <td style={{ padding: "1rem", color: "var(--text-dim)" }}>
                       {formattedTime}

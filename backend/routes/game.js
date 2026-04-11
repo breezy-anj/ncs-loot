@@ -5,68 +5,83 @@ import User from "../models/User.js";
 
 const router = express.Router();
 
-router.get("/clues", authenticate, (req, res) => {
-  const safeClues = clues.map((clue) => ({
-    id: clue.id,
-    text: clue.text,
-  }));
-
-  res.status(200).json({ success: true, clues: safeClues });
-});
-
-router.post("/submit", authenticate, async (req, res) => {
+router.get("/current", authenticate, async (req, res) => {
   try {
-    const isVaultLocked = await User.exists({ isEvaluated: true });
-    if (isVaultLocked) {
-      return res.status(403).json({
-        success: false,
-        message: "EVALUATION COMPLETE. VAULT IS LOCKED.",
-      });
-    }
-
-    const { finalAnswer } = req.body;
-
-    if (!finalAnswer) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing answer" });
-    }
-
     const user = await User.findById(req.user.id);
-    if (!user)
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+    const level = user.currentLevel || 0;
 
-    user.submittedAnswer = finalAnswer;
-    user.submissionTime = Date.now();
-    await user.save();
+    if (level >= clues.length) {
+      return res.status(200).json({ success: true, completed: true });
+    }
 
     res.status(200).json({
       success: true,
-      message: "Answer recorded.",
-      submittedAnswer: finalAnswer,
+      completed: false,
+      clue: { id: clues[level].id, text: clues[level].text },
+      level: level,
     });
   } catch (error) {
     res.status(500).json({ success: false, error: "Server error" });
   }
 });
 
-// 3. Fetch the Leaderboard data
-router.get("/leaderboard", async (req, res) => {
+router.post("/verify", authenticate, async (req, res) => {
   try {
-    const evaluatedCount = await User.countDocuments({ isEvaluated: true });
+    const { answer } = req.body;
+    if (!answer)
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing answer" });
 
-    if (evaluatedCount === 0) {
-      return res.status(200).json({ success: true, active: false });
+    const user = await User.findById(req.user.id);
+    const level = user.currentLevel || 0;
+
+    if (level >= clues.length) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Mission already completed." });
     }
 
-    const leaderboard = await User.find({
-      isEvaluated: true,
-      submittedAnswer: { $exists: true, $ne: null },
-    })
-      .select("name admissionNumber submissionTime correctClues")
-      .sort({ correctClues: -1, submissionTime: 1 });
+    const cleanUserPart = answer.toLowerCase().replace(/\s+/g, "");
+
+    if (cleanUserPart === clues[level].answer) {
+      user.currentLevel = level + 1;
+      user.lastSolveTime = Date.now();
+
+      if (user.currentLevel === clues.length) {
+        user.completedAt = Date.now();
+      }
+
+      await user.save();
+
+      return res.status(200).json({
+        success: true,
+        correct: true,
+        message: "ACCESS GRANTED. NEXT CLUE UNLOCKED.",
+        level: user.currentLevel,
+      });
+    } else {
+      return res.status(200).json({
+        success: true,
+        correct: false,
+        message: "INCORRECT DECRYPTION. TRY AGAIN.",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+router.get("/leaderboard", async (req, res) => {
+  try {
+    // Only fetch users who have solved at least one clue
+    const leaderboard = await User.find({ currentLevel: { $gt: 0 } })
+      .select("name admissionNumber lastSolveTime currentLevel")
+      .sort({ currentLevel: -1, lastSolveTime: 1 });
+
+    if (leaderboard.length === 0) {
+      return res.status(200).json({ success: true, active: false });
+    }
 
     res.status(200).json({ success: true, active: true, leaderboard });
   } catch (error) {

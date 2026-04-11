@@ -1,0 +1,581 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+data/
+  clues.js
+middleware/
+  authenticate.js
+models/
+  User.js
+routes/
+  auth.js
+  game.js
+scripts/
+  evaluate.js
+  nuke.js
+  reset.js
+package.json
+server.js
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="data/clues.js">
+export const clues = [
+  // ── NODE 01: COURTYARD ──
+  {
+    id: 1,
+    text: "Caught right in the middle of Blocks 1, 2, and 3. Find the patch of green where everyone goes to kill time between classes.",
+    qrText:
+      "SYSTEM_PROMPT: You found the green zone. [EXTERNAL INTEL SEARCH PERMITTED]: In the town of Hawkins, the test subject known as Eleven has an obsession with a specific brand of frozen waffles. Run a search query to find the brand.",
+    answer: "eggo",
+  },
+
+  // ── NODE 02: HAWA MAHAL ──
+  {
+    id: 2,
+    text: "A massive wall of windows where absolutely zero classes actually happen. Head to the stairs below it where the crowd is usually hanging out.",
+    qrText:
+      "SYSTEM_PROMPT: You found the dead zone. [EXTERNAL INTEL SEARCH PERMITTED]: He is probably the worst character of THE BOYS. A negative Superman",
+    answer: "homelander",
+  },
+
+  // ── NODE 03: CLOSED GATE ──
+  {
+    id: 3,
+    text: "There are two ways onto the campus, but you can never leave through this one. Check the rusted bars of the permanently sealed exit.",
+    qrText:
+      "SYSTEM_PROMPT: Firewall bypassed. No riddle required for this node. YOUR MASTER CIPHER PIECE IS: 11",
+    answer: "11",
+  },
+
+  // ── NODE 04: ATM / AMENITIES STORE ──
+  {
+    id: 4,
+    text: "Need some cash or forgot to buy a notebook? Look for the narrow gap between the money machine and the campus supply shop.",
+    qrText:
+      "SYSTEM_PROMPT: You found the supply cache. [ACCESSING EXTERNAL DATABASE]: What is the name of the blue, experimental chemical serum manufactured by Vought International that grants humans superpowers?",
+    answer: "compoundv",
+  },
+
+  // ── NODE 05: BIG STAGE ──
+  {
+    id: 5,
+    text: "Overlooking the football and volleyball courts, there’s a giant platform waiting for an audience that isn't there. Check the steps of the empty stage.",
+    qrText:
+      "SYSTEM_PROMPT: You ascended the empty pedestal. [EXTERNAL INTEL APPROVED]: This iconic Swedish DJ told the world to 'Wake Me Up' when it's all over and gave us 'Levels'. What was his stage name?",
+    answer: "avicii",
+  },
+
+  // ── NODE 06: THE TEMPLE ──
+  {
+    id: 6,
+    text: "The quietest spot on campus. You have to take off your shoes before you step past the boundary. Be respectful, and check near the entrance.",
+    qrText:
+      "SYSTEM_PROMPT: You entered the offline zone respectfully. No extraction riddle required here. YOUR MASTER CIPHER PIECE IS: apple",
+    answer: "apple",
+  },
+
+  // ── NODE 07: MULTIPURPOSE HALL (MPH) ──
+  {
+    id: 7,
+    text: "Walk past the smell of food and head upstairs. Find the massive auditorium doors where all the big college events go down.",
+    qrText:
+      "SYSTEM_PROMPT: You found the great echo chamber. [OSINT REQUIRED]: In Westeros, Jon Snow wields a sword named Longclaw. Query the web to find the exceptionally rare, dark, and magical metal this blade is forged from.",
+    answer: "valyriansteel",
+  },
+
+  // ── NODE 08: SPORTS CENTRE ──
+  {
+    id: 8,
+    text: "Want to play a match? You have to hand over your ID card first. Go to the exact window where they hand out the sports gear.",
+    qrText:
+      "SYSTEM_PROMPT: You found the armory. [EXTERNAL INTEL APPROVED]: Geralt of Rivia hunts monsters across the Continent, but he never travels without his trusty, ever-loyal horse. What does he name his horse?",
+    answer: "roach",
+  },
+
+  // ── NODE 09: CRICKET NETS ──
+  {
+    id: 9,
+    text: "Head out to the field. Look for the massive cages where the batters practice their swing. Your next clue is caught in the mesh.",
+    qrText:
+      "SYSTEM_PROMPT: You found the containment mesh. [EXTERNAL INTEL SEARCH PERMITTED]: What is the name of the watch that BEN 10 wore?.",
+    answer: "omnitrix",
+  },
+
+  // ── NODE 10: THE CAFETERIA ──
+  {
+    id: 10,
+    text: "The loudest, most crowded place when hunger hits. Ignore the tables and look right near the counter where the hot plates are handed out.",
+    qrText:
+      "SYSTEM_PROMPT: You found the biological refueling station. YOUR MASTER CIPHER PIECE IS: MataJiKaAshirwad",
+    answer: "matajikaashirwad",
+  },
+];
+
+/* ========================================================================
+ADMIN REFERENCE GUIDE: QR CODE PLACEMENT
+========================================================================
+[NODE 01] Courtyard: Tape under a stone bench or low on a tree trunk between AB 1, 2, and 3.
+[NODE 02] Hawa Mahal: Tucked under the lip of one of the main steps.
+[NODE 03] Closed Gate: Wrapped around a bar or tucked into the brickwork.
+[NODE 04] ATM/Store: On the notice board or the side panel between the ATM and the shop.
+[NODE 05] Big Stage: On the back wall of the stage or hidden behind the access stairs.
+[NODE 06] Temple: A discrete spot on a pillar or near the shoe racks.
+[NODE 07] MPH Doors: The staircase railing leading up to the hall, or near the doors.
+[NODE 08] Sports Window: Stuck right below the ledge of the sports equipment issue window.
+[NODE 09] Cricket Nets: Zip-tied or woven into the back of the practice netting.
+[NODE 10] Cafeteria: On a pillar facing the food counter or under the pick-up ledge.
+========================================================================
+*/
+</file>
+
+<file path="middleware/authenticate.js">
+import jwt from "jsonwebtoken";
+
+const authenticate = (req, res, next) => {
+  const authHeader = req.header("Authorization");
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      success: false,
+      error: "Access denied. Invalid or missing token.",
+    });
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    console.error("JWT Verification Error:", error.message);
+    res
+      .status(401)
+      .json({ success: false, error: "Session expired or invalid." });
+  }
+};
+
+export default authenticate;
+</file>
+
+<file path="models/User.js">
+import mongoose from "mongoose";
+
+const UserSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  zealId: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  year: { type: String, required: true },
+  admissionNumber: { type: String, required: true },
+
+  // Game Data
+  firstLogin: { type: Date },
+  submittedAnswer: { type: String },
+  submissionTime: { type: Date },
+
+  // Post-Evaluation Data
+  isEvaluated: { type: Boolean, default: false },
+  correctClues: { type: Number, default: 0 },
+});
+
+export default mongoose.model("User", UserSchema, "operatives");
+</file>
+
+<file path="routes/auth.js">
+import express from "express";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import User from "../models/User.js";
+import authenticate from "../middleware/authenticate.js";
+
+const router = express.Router();
+
+router.post("/register", async (req, res) => {
+  try {
+    const { name, zealId, password, year, admissionNumber } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await User.create({
+      name,
+      zealId,
+      password: hashedPassword,
+      year,
+      admissionNumber,
+    });
+
+    res.status(201).json({ success: true, message: "Operative created." });
+  } catch (err) {
+    if (err.code === 11000) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Zeal ID already registered." });
+    }
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.post("/login", async (req, res) => {
+  try {
+    const { zealId, password } = req.body;
+    const user = await User.findOne({ zealId });
+
+    if (!user)
+      return res
+        .status(400)
+        .json({ success: false, message: "Operative not found." });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch)
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid access key." });
+
+    if (!user.firstLogin) {
+      user.firstLogin = Date.now();
+      await user.save();
+    }
+
+    const token = jwt.sign(
+      { id: user._id, zealId: user.zealId },
+      process.env.JWT_SECRET,
+    );
+
+    const userData = {
+      id: user._id,
+      name: user.name,
+      zealId: user.zealId,
+      hasSubmitted: !!user.submittedAnswer,
+      submittedAnswer: user.submittedAnswer || null,
+    };
+
+    res.status(200).json({ success: true, token, user: userData });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+router.get("/me", authenticate, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+
+    res.status(200).json({
+      success: true,
+      user: {
+        name: user.name,
+        zealId: user.zealId,
+        hasSubmitted: !!user.submittedAnswer,
+        submittedAnswer: user.submittedAnswer || null,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+export default router;
+</file>
+
+<file path="routes/game.js">
+import express from "express";
+import authenticate from "../middleware/authenticate.js";
+import { clues } from "../data/clues.js";
+import User from "../models/User.js";
+
+const router = express.Router();
+
+router.get("/clues", authenticate, (req, res) => {
+  const safeClues = clues.map((clue) => ({
+    id: clue.id,
+    text: clue.text,
+  }));
+
+  res.status(200).json({ success: true, clues: safeClues });
+});
+
+router.post("/submit", authenticate, async (req, res) => {
+  try {
+    const isVaultLocked = await User.exists({ isEvaluated: true });
+    if (isVaultLocked) {
+      return res.status(403).json({
+        success: false,
+        message: "EVALUATION COMPLETE. VAULT IS LOCKED.",
+      });
+    }
+
+    const { finalAnswer } = req.body;
+
+    if (!finalAnswer) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing answer" });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+
+    user.submittedAnswer = finalAnswer;
+    user.submissionTime = Date.now();
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Answer recorded.",
+      submittedAnswer: finalAnswer,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+// 3. Fetch the Leaderboard data
+router.get("/leaderboard", async (req, res) => {
+  try {
+    const evaluatedCount = await User.countDocuments({ isEvaluated: true });
+
+    if (evaluatedCount === 0) {
+      return res.status(200).json({ success: true, active: false });
+    }
+
+    const leaderboard = await User.find({
+      isEvaluated: true,
+      submittedAnswer: { $exists: true, $ne: null },
+    })
+      .select("name admissionNumber submissionTime correctClues")
+      .sort({ correctClues: -1, submissionTime: 1 });
+
+    res.status(200).json({ success: true, active: true, leaderboard });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+export default router;
+</file>
+
+<file path="scripts/evaluate.js">
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import User from "../models/User.js";
+import { clues } from "../data/clues.js";
+
+dotenv.config();
+
+// Automatically pull the master answers from clues.js.
+const MASTER_ANSWERS = clues.map((clue) => clue.answer);
+
+const evaluate = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("Connected to DB. Evaluating Loot submissions...\n");
+    console.log(`Current Vault Key: ${MASTER_ANSWERS.join("-")}\n`);
+
+    const users = await User.find({});
+    let processed = 0;
+
+    for (let user of users) {
+      if (!user.submittedAnswer) continue;
+
+      // Split the user's string by dash
+      const userParts = user.submittedAnswer.split("-");
+      let correctCount = 0;
+
+      for (let i = 0; i < MASTER_ANSWERS.length; i++) {
+        if (userParts[i]) {
+          // Force lowercase and strip ALL spaces from the user's input before comparing
+          const cleanUserPart = userParts[i].toLowerCase().replace(/\s+/g, "");
+          if (cleanUserPart === MASTER_ANSWERS[i]) {
+            correctCount++;
+          }
+        }
+      }
+
+      user.correctClues = correctCount;
+      user.isEvaluated = true;
+      await user.save();
+
+      console.log(
+        `Operative: ${user.name} | Score: ${correctCount}/${MASTER_ANSWERS.length}`,
+      );
+      processed++;
+    }
+
+    console.log(`\nEvaluation complete. ${processed} operatives graded.`);
+    process.exit(0);
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+};
+
+evaluate();
+</file>
+
+<file path="scripts/nuke.js">
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import User from "../models/User.js";
+
+dotenv.config();
+
+mongoose.connect(process.env.MONGO_URI).then(async () => {
+  console.log("Connected to Atlas. Initiating total wipe...");
+  try {
+    const result = await User.deleteMany({});
+    console.log(
+      `SUCCESS: ${result.deletedCount} operatives purged from the database.`,
+    );
+  } catch (err) {
+    console.log("Error wiping database:", err);
+  }
+  process.exit(0);
+});
+</file>
+
+<file path="scripts/reset.js">
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import User from "../models/User.js";
+
+dotenv.config();
+
+const reset = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("Connected to DB. Reverting evaluation state...");
+
+    const result = await User.updateMany(
+      {},
+      { $set: { isEvaluated: false, correctClues: 0 } },
+    );
+
+    console.log(
+      `SUCCESS: Reverted ${result.modifiedCount} operatives to pre-evaluation state.`,
+    );
+    process.exit(0);
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+};
+
+reset();
+</file>
+
+<file path="package.json">
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "axios": "^1.13.6",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.3.0"
+  }
+}
+</file>
+
+<file path="server.js">
+import express from "express";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import cors from "cors";
+
+import authRoutes from "./routes/auth.js";
+import gameRoutes from "./routes/game.js";
+
+dotenv.config();
+
+// new
+if (!process.env.JWT_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET is not defined in .env");
+  process.exit(1);
+}
+
+const app = express();
+//new
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
+app.use(express.json());
+
+app.use("/api/auth", authRoutes);
+app.use("/api/game", gameRoutes);
+
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("Connected to MongoDB Atlas"))
+  .catch((err) => {
+    console.error("MongoDB Connection Error:", err);
+    process.exit(1);
+  });
+
+const PORT = process.env.PORT || 5005;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+</file>
+
+</files>

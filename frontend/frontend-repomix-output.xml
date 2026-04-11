@@ -1,0 +1,2068 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+src/
+  components/
+    AnswerPopup.jsx
+    Navbar.jsx
+    SplashScreen.jsx
+  context/
+    AuthContext.jsx
+  pages/
+    About.jsx
+    Auth.jsx
+    Dashboard.jsx
+    Home.jsx
+    Leaderboard.jsx
+  App.css
+  App.jsx
+  config.js
+  index.css
+  main.jsx
+index.html
+package.json
+vite.config.js
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="src/components/AnswerPopup.jsx">
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { API_BASE } from "../config";
+
+/**
+ * AnswerPopup
+ * Props:
+ * onClose   – called when the user dismisses the popup
+ * onSuccess – called when the answer is successfully submitted
+ */
+const AnswerPopup = ({ onClose, onSuccess }) => {
+  const [answer, setAnswer] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [confirmed, setConfirmed] = useState(false);
+
+  // Get token securely from context
+  const { token } = useAuth();
+
+  const handleSubmit = async () => {
+    const trimmed = answer.trim();
+    if (!trimmed) {
+      setError("ANSWER_FIELD_EMPTY");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch(`${API_BASE}/api/game/submit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Used context token here
+        },
+        body: JSON.stringify({ finalAnswer: trimmed }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setConfirmed(true);
+        setTimeout(() => {
+          onSuccess();
+          onClose();
+        }, 2000);
+      } else {
+        setError(data.message || "SUBMISSION_FAILED — RETRY");
+      }
+    } catch {
+      setError("TERMINAL_OFFLINE — CHECK_CONNECTION");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div
+      className="popup-overlay"
+      onClick={(e) => e.target === e.currentTarget && !loading && onClose()}
+    >
+      <div className="popup-card">
+        <h2 className="popup-title cinzel">SUBMIT_FINAL_ANSWER</h2>
+
+        <p className="popup-note">
+          Combine all clue answers in order, separated by a dash.
+          <br />
+          <strong>FORMAT: answer1-answer2-answer3</strong>
+        </p>
+
+        {confirmed ? (
+          <div className="popup-confirmed">
+            <span className="popup-confirmed-icon">✓</span>
+            <p className="popup-confirmed-text cinzel">ANSWER_LOCKED_IN</p>
+            <p className="popup-confirmed-sub">
+              Your submission has been recorded.
+            </p>
+          </div>
+        ) : (
+          <>
+            {error && <p className="popup-error">⚠ {error}</p>}
+
+            <input
+              className="popup-input"
+              type="text"
+              placeholder="ENTER_YOUR_ANSWER_HERE..."
+              value={answer}
+              onChange={(e) => {
+                setAnswer(e.target.value);
+                setError("");
+              }}
+              onKeyDown={(e) => e.key === "Enter" && !loading && handleSubmit()}
+              autoFocus
+            />
+
+            <div className="popup-actions">
+              <button
+                className="popup-submit-btn cinzel"
+                onClick={handleSubmit}
+                disabled={loading}
+              >
+                {loading ? "TRANSMITTING..." : "LOCK_IN_ANSWER"}
+              </button>
+
+              <button
+                className="popup-abort-btn"
+                onClick={onClose}
+                disabled={loading}
+              >
+                [ ABORT_MISSION ]
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AnswerPopup;
+</file>
+
+<file path="src/components/Navbar.jsx">
+import { useNavigate } from "react-router-dom";
+
+const Navbar = ({ isLoggedIn, userName, onLogout }) => {
+  const navigate = useNavigate();
+
+  return (
+    <nav className="navbar">
+      <span className="nav-brand cinzel" onClick={() => navigate("/")}>
+        LOOT
+      </span>
+
+      <div className="nav-status">
+        <span className="pulse-dot" />
+        SYSTEM_ONLINE
+      </div>
+
+      <div className="nav-actions">
+        {/* LEADERBOARD BUTTON */}
+        <button className="nav-btn" onClick={() => navigate("/leaderboard")}>
+          [ STANDINGS ]
+        </button>
+
+        {isLoggedIn ? (
+          <>
+            <span
+              className="nav-btn"
+              style={{ cursor: "default", color: "var(--text-dim)" }}
+            >
+              {userName || "OPERATIVE"}
+            </span>
+            <button className="nav-btn danger" onClick={onLogout}>
+              [ LOGOUT ]
+            </button>
+          </>
+        ) : (
+          <>
+            <button className="nav-btn" onClick={() => navigate("/login")}>
+              [ LOGIN ]
+            </button>
+            <button className="nav-btn" onClick={() => navigate("/register")}>
+              [ REGISTER ]
+            </button>
+          </>
+        )}
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;
+</file>
+
+<file path="src/components/SplashScreen.jsx">
+import { useEffect } from 'react';
+
+const SplashScreen = ({ onFinished }) => {
+  useEffect(() => {
+    const timer = setTimeout(onFinished, 4000);
+    return () => clearTimeout(timer);
+  }, [onFinished]);
+
+  return (
+    <div className="splash">
+      <div className="bg-grid" />
+
+      <h1 className="splash-title cinzel">LOOT</h1>
+      <p className="splash-sub">THE GRAND HUNT</p>
+
+      <div className="splash-bar-track">
+        <div className="splash-bar-fill" />
+      </div>
+
+      <p className="splash-status blink">INITIALIZING OPERATIVE SYSTEM...</p>
+    </div>
+  );
+};
+
+export default SplashScreen;
+</file>
+
+<file path="src/context/AuthContext.jsx">
+import { createContext, useState, useEffect, useContext } from "react";
+
+const AuthContext = createContext();
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const savedToken = localStorage.getItem("loot_token");
+    const savedUser = localStorage.getItem("loot_user");
+
+    if (savedToken && savedUser) {
+      try {
+        setToken(savedToken);
+        setUser(JSON.parse(savedUser));
+      } catch {
+        logout();
+      }
+    }
+    setLoading(false);
+  }, []);
+
+  const login = (newToken, newUser) => {
+    localStorage.setItem("loot_token", newToken);
+    localStorage.setItem("loot_user", JSON.stringify(newUser));
+    setToken(newToken);
+    setUser(newUser);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("loot_token");
+    localStorage.removeItem("loot_user");
+    setToken(null);
+    setUser(null);
+  };
+
+  const syncUser = (updatedUserData) => {
+    setUser(updatedUserData);
+    localStorage.setItem("loot_user", JSON.stringify(updatedUserData));
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{ user, token, loading, login, logout, syncUser }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => useContext(AuthContext);
+</file>
+
+<file path="src/pages/About.jsx">
+import { useNavigate } from "react-router-dom";
+
+const events = [
+  {
+    name: "SHERLOCKED",
+    num: "01",
+    desc: "An online mystery-solving competition where participants follow a storyline and solve clues to uncover the identity of a thief. Each stage unlocks new hints that test observation and analytical thinking.",
+  },
+  {
+    name: "DOMINION",
+    num: "02",
+    desc: "An online esports tournament featuring structured scheduling, live broadcasts, and commentary. Teams compete in multiplayer games to claim the top spot in a professional gaming environment.",
+  },
+  {
+    name: "VR EXPO",
+    num: "03",
+    desc: "Showcases Virtual Reality technology through demonstrations and interactive sessions. Participants experience VR equipment firsthand while learning about its real-world applications.",
+  },
+  {
+    name: "CRAFFITI",
+    num: "04",
+    desc: "An online drawing and guessing competition. Players sketch words while others guess them correctly, with points awarded for accuracy and creativity across themed rounds.",
+  },
+  {
+    name: "BLIND CODE",
+    num: "05",
+    desc: "A pair-programming challenge where one participant codes blindfolded and the other provides verbal instructions. Focuses heavily on communication and logical problem-solving.",
+  },
+  {
+    name: "LOOT",
+    num: "06",
+    desc: "A fast-paced riddle-solving competition where participants progress through multiple puzzle rounds. Each solved clue unlocks the next challenge in a race against time.",
+    highlight: true,
+  },
+  {
+    name: "CODEWARS",
+    num: "07",
+    desc: "A competitive coding contest ranging from logical puzzles to real-world scenarios. Rankings are based on accuracy, execution speed, and solution efficiency.",
+  },
+];
+
+const About = () => {
+  const navigate = useNavigate();
+
+  return (
+    <div
+      className="about-wrapper"
+      style={{
+        paddingTop: "80px",
+        paddingBottom: "3rem",
+        px: "1.5rem",
+        minHeight: "100vh",
+      }}
+    >
+      <button
+        className="auth-back"
+        onClick={() => navigate("/")}
+        style={{ marginLeft: "10%", marginBottom: "1rem" }}
+      >
+        ← [ BACK_TO_SURFACE ]
+      </button>
+
+      <div
+        className="about-header"
+        style={{ marginLeft: "10%", marginRight: "10%" }}
+      >
+        <p className="about-eyebrow">NCS_EVENTS // DIRECTORY_LOADED</p>
+        <h1 className="about-title cinzel">ABOUT THE HUNT</h1>
+        <p className="about-sub">
+          LOOT is one of seven events hosted by NCS. Here is the full roster.
+        </p>
+      </div>
+
+      <div className="about-grid" style={{ margin: "0 auto", width: "80%" }}>
+        {events.map((event) => (
+          <div
+            key={event.num}
+            className={`about-card${event.highlight ? " about-card--highlight" : ""}`}
+          >
+            <div className="about-card-num">{event.num}</div>
+            <h2 className="about-card-name cinzel">{event.name}</h2>
+            <p className="about-card-desc">{event.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default About;
+</file>
+
+<file path="src/pages/Auth.jsx">
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { API_BASE } from "../config";
+
+const Auth = ({ mode }) => {
+  const isLogin = mode === "login";
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const [formData, setFormData] = useState({
+    name: "",
+    zealId: "",
+    year: "",
+    admissionNumber: "",
+    password: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handleChange = (e) => {
+    setError("");
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
+    const payload = isLogin
+      ? { zealId: formData.zealId, password: formData.password }
+      : formData;
+
+    try {
+      const res = await fetch(`${API_BASE}${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        if (isLogin) {
+          login(data.token, data.user);
+          navigate("/dashboard"); // Direct route to dashboard
+        } else {
+          setSuccess("IDENTITY_CREATED — PROCEED TO LOGIN");
+          setTimeout(() => navigate("/login"), 1800);
+        }
+      } else {
+        setError(data.message || "ACCESS_DENIED");
+      }
+    } catch {
+      setError("TERMINAL_OFFLINE — CHECK_CONNECTION");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="auth-wrapper">
+      <div className="auth-card">
+        <button className="auth-back" onClick={() => navigate("/")}>
+          ← [ BACK_TO_SURFACE ]
+        </button>
+
+        <h2 className="auth-title cinzel">
+          {isLogin ? "IDENTITY_VERIFICATION" : "CREATE_OPERATIVE"}
+        </h2>
+
+        <p className="auth-mode-line">
+          {isLogin
+            ? "Enter your credentials to access the vault."
+            : "Register to participate in the hunt."}
+        </p>
+
+        <form className="auth-form" onSubmit={handleSubmit}>
+          {/* Form fields remain exactly the same as your original code */}
+          <div className="form-row">
+            <div className="field full">
+              <label>ZEAL_ID</label>
+              <input
+                name="zealId"
+                type="text"
+                placeholder="Your Zeal ID..."
+                value={formData.zealId}
+                onChange={handleChange}
+                required
+                autoComplete="username"
+              />
+            </div>
+          </div>
+
+          {!isLogin && (
+            <>
+              <div className="form-row">
+                <div className="field full">
+                  <label>OPERATIVE_NAME</label>
+                  <input
+                    name="name"
+                    type="text"
+                    placeholder="Full Name..."
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="field">
+                  <label>YEAR</label>
+                  <input
+                    name="year"
+                    type="text"
+                    placeholder="1, 2, 3..."
+                    value={formData.year}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="field">
+                  <label>ADMISSION_NO</label>
+                  <input
+                    name="admissionNumber"
+                    type="text"
+                    placeholder="Admission No..."
+                    value={formData.admissionNumber}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className="form-row">
+            <div className="field full">
+              <label>ACCESS_KEY</label>
+              <input
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                autoComplete={isLogin ? "current-password" : "new-password"}
+              />
+            </div>
+          </div>
+
+          {error && <p className="auth-error">⚠ {error}</p>}
+          {success && <p className="auth-success">✓ {success}</p>}
+
+          <button
+            type="submit"
+            className="submit-btn cinzel"
+            disabled={loading}
+          >
+            {loading
+              ? "PROCESSING..."
+              : isLogin
+                ? "UNLOCK_VAULT"
+                : "CREATE_ALIAS"}
+          </button>
+        </form>
+
+        <div className="auth-toggle">
+          {isLogin ? (
+            <>
+              First time at these ruins?{" "}
+              <span onClick={() => navigate("/register")}>
+                [ CREATE_ALIAS ]
+              </span>
+            </>
+          ) : (
+            <>
+              Already an operative?{" "}
+              <span onClick={() => navigate("/login")}>[ LOGIN ]</span>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Auth;
+</file>
+
+<file path="src/pages/Dashboard.jsx">
+import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+import AnswerPopup from "../components/AnswerPopup";
+import { API_BASE } from "../config";
+
+const Dashboard = () => {
+  const { user, token, logout, updateSubmissionStatus } = useAuth();
+
+  const [clues, setClues] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
+
+  const hasSubmitted = user?.hasSubmitted ?? false;
+
+  useEffect(() => {
+    const fetchClues = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/game/clues`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.status === 401) {
+          logout(); // Invalid token, kick them out
+          return;
+        }
+
+        const data = await res.json();
+
+        if (data.success) {
+          setClues(data.clues || []);
+        } else {
+          setFetchError("FAILED_TO_LOAD_INTEL — CONTACT_HQ");
+        }
+      } catch {
+        setFetchError("TERMINAL_OFFLINE — RETRYING...");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (token) fetchClues();
+  }, [token, logout]);
+
+  const handleSubmitSuccess = (answerString) => {
+    const updatedUser = {
+      ...user,
+      hasSubmitted: true,
+      submittedAnswer: answerString,
+    };
+    syncUser(updatedUser); //
+    setShowPopup(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="loading-screen" style={{ paddingTop: "56px" }}>
+        <p className="loading-text">SYNCHRONIZING_OPERATIVE_DATA...</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {showPopup && (
+        <AnswerPopup
+          onClose={() => setShowPopup(false)}
+          onSuccess={handleSubmitSuccess}
+        />
+      )}
+
+      <div className="dashboard-wrapper">
+        <aside className="sidebar">
+          <div className="sidebar-status">
+            <span className="status-dot" /> OPERATIVE_ONLINE
+          </div>
+          <p className="sidebar-name cinzel">{user?.zealId || "UNKNOWN"}</p>
+          <div className="sidebar-divider" />
+          <div className="sidebar-info">
+            NAME<span>{user?.name || "REDACTED"}</span>
+            ACCESS_LEVEL<span>OPERATIVE — 01</span>
+            CLUES_LOADED<span>{clues.length}</span>
+          </div>
+
+          {hasSubmitted && (
+            <div className="submitted-badge">✓ FINAL_ANSWER_SUBMITTED</div>
+          )}
+        </aside>
+
+        <section className="intel-panel">
+          <div className="panel-header">
+            <div>
+              <h2 className="panel-title cinzel">ACTIVE_MISSIONS</h2>
+              <p className="panel-sub">
+                Solve each clue — combine answers to unlock the vault.
+              </p>
+            </div>
+            <button
+              className="final-submit-btn"
+              onClick={() => setShowPopup(true)}
+              disabled={hasSubmitted}
+              title={
+                hasSubmitted ? "Already submitted" : "Submit your final answer"
+              }
+            >
+              {hasSubmitted ? "✓ SUBMITTED" : "[ SUBMIT_FINAL_ANSWER ]"}
+            </button>
+          </div>
+
+          {fetchError && (
+            <p className="popup-error" style={{ marginBottom: "1.5rem" }}>
+              ⚠ {fetchError}
+            </p>
+          )}
+
+          <div className="clues-list">
+            {clues.length > 0 ? (
+              clues.map((clue, idx) => (
+                <div key={clue.id ?? idx} className="clue-card">
+                  <span className="clue-number">
+                    CLUE — #{String(idx + 1).padStart(2, "0")}
+                  </span>
+                  <p className="clue-text">{clue.text}</p>
+                </div>
+              ))
+            ) : (
+              <div className="no-clues">
+                <p>NO_INTEL_LOADED. CONTACT_HQ.</p>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+    </>
+  );
+};
+
+export default Dashboard;
+</file>
+
+<file path="src/pages/Home.jsx">
+import { useNavigate } from "react-router-dom";
+
+const Home = () => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="home-wrapper">
+      <div className="home-artifact">
+        <div className="artifact-rings" />
+        <div className="artifact-box">
+          <h1 className="artifact-title cinzel">LOOT</h1>
+        </div>
+      </div>
+
+      <div className="home-hero">
+        <h2 className="home-subtitle cinzel">The Grand Hunt Awaits</h2>
+        <p className="home-desc">
+          Only the worthy shall enter the vault. Solve the clues, crack the
+          cipher, claim the loot.
+        </p>
+
+        <button className="begin-btn" onClick={() => navigate("/login")}>
+          BEGIN YOUR HUNT
+        </button>
+      </div>
+
+      <p className="home-coords">SCANNING AREA: [ 28.6139° N | 77.2090° E ]</p>
+    </div>
+  );
+};
+
+export default Home;
+</file>
+
+<file path="src/pages/Leaderboard.jsx">
+import { useState, useEffect } from "react";
+import { API_BASE } from "../config";
+
+const Leaderboard = () => {
+  const [board, setBoard] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isActive, setIsActive] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/game/leaderboard`);
+        if (!res.ok) throw new Error("Network error or server unreachable");
+
+        const data = await res.json();
+
+        if (data.success) {
+          setIsActive(data.active);
+          setBoard(data.leaderboard || []);
+        } else {
+          setError("FAILED_TO_LOAD_STANDINGS");
+        }
+      } catch (err) {
+        console.error("Leaderboard fetch error:", err);
+        setError("TERMINAL_OFFLINE — CHECK CONNECTION");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeaderboard();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="loading-screen" style={{ paddingTop: "56px" }}>
+        <p className="loading-text">DECRYPTING_RANKS...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="dashboard-wrapper"
+      style={{ display: "block", padding: "5rem 2rem" }}
+    >
+      <div
+        className="about-header"
+        style={{ textAlign: "center", margin: "0 auto 3rem auto" }}
+      >
+        <h1 className="about-title cinzel">THE VAULT STANDINGS</h1>
+      </div>
+
+      {error ? (
+        <p
+          className="popup-error"
+          style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center" }}
+        >
+          ⚠ {error}
+        </p>
+      ) : !isActive ? (
+        <div
+          className="no-clues"
+          style={{ maxWidth: "600px", margin: "0 auto" }}
+        >
+          <p className="blink">RESULTS YET TO BE EVALUATED</p>
+        </div>
+      ) : board.length === 0 ? (
+        <div
+          className="no-clues"
+          style={{ maxWidth: "600px", margin: "0 auto" }}
+        >
+          <p>NO QUALIFIED OPERATIVES FOUND.</p>
+        </div>
+      ) : (
+        <div
+          style={{
+            maxWidth: "800px",
+            margin: "0 auto",
+            background: "var(--bg-card)",
+            border: "1px solid var(--border)",
+            overflowX: "auto",
+          }}
+        >
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              textAlign: "left",
+              fontFamily: "var(--mono)",
+              fontSize: "0.85rem",
+            }}
+          >
+            <thead>
+              <tr
+                style={{
+                  borderBottom: "1px solid var(--border)",
+                  color: "var(--neon-dim)",
+                }}
+              >
+                <th style={{ padding: "1rem" }}>RANK</th>
+                <th style={{ padding: "1rem" }}>OPERATIVE</th>
+                <th style={{ padding: "1rem" }}>ROLL_NO</th>
+                <th style={{ padding: "1rem" }}>SCORE</th>
+                <th style={{ padding: "1rem" }}>TIME_LOCKED</th>
+              </tr>
+            </thead>
+            <tbody>
+              {board.map((user, index) => {
+                // Safely handle missing dates to prevent crashes
+                const date = new Date(user.submissionTime || Date.now());
+                const formattedTime = `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}:${date.getSeconds().toString().padStart(2, "0")}`;
+
+                return (
+                  <tr
+                    key={user._id || index}
+                    style={{ borderBottom: "1px solid rgba(0,255,65,0.1)" }}
+                  >
+                    <td style={{ padding: "1rem", color: "var(--neon)" }}>
+                      {String(index + 1).padStart(2, "0")}
+                    </td>
+                    <td style={{ padding: "1rem", color: "var(--text)" }}>
+                      {user.name || "UNKNOWN"}
+                    </td>
+                    <td style={{ padding: "1rem", color: "var(--text-dim)" }}>
+                      {user.admissionNumber || "N/A"}
+                    </td>
+                    <td style={{ padding: "1rem", color: "var(--neon)" }}>
+                      {user.correctClues || 0}
+                    </td>
+                    <td style={{ padding: "1rem", color: "var(--text-dim)" }}>
+                      {formattedTime}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Leaderboard;
+</file>
+
+<file path="src/App.css">
+/* ═══════════════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════════════ */
+.app-shell {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Background Grid ── */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(to right,  rgba(0,255,65,0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,255,65,0.04) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Vignette ── */
+.bg-vignette {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.85) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Scanline sweep ── */
+.bg-scanline {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+}
+.bg-scanline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, transparent, rgba(0,255,65,0.08), transparent);
+  animation: scanline 8s linear infinite;
+}
+
+/* ── Main content area ── */
+.app-content {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+}
+
+/* ═══════════════════════════════════════════════
+   NAVBAR
+═══════════════════════════════════════════════ */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  height: 56px;
+  background: rgba(7, 10, 7, 0.92);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+}
+
+.nav-brand {
+  font-family: var(--cinzel);
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--neon);
+  text-shadow: 0 0 12px var(--neon);
+  letter-spacing: 0.25em;
+  cursor: pointer;
+}
+
+.nav-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+}
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--neon);
+  box-shadow: 0 0 8px var(--neon);
+  animation: blink 2s ease-in-out infinite;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  padding: 0.35rem 0.9rem;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  transition: all 0.2s;
+}
+.nav-btn:hover {
+  border-color: var(--neon);
+  color: var(--neon);
+  box-shadow: 0 0 10px var(--neon-glow);
+}
+.nav-btn.danger:hover {
+  border-color: #ff4444;
+  color: #ff4444;
+  box-shadow: 0 0 10px rgba(255,68,68,0.2);
+}
+
+/* ═══════════════════════════════════════════════
+   SPLASH SCREEN
+═══════════════════════════════════════════════ */
+.splash {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.splash-title {
+  font-family: var(--cinzel);
+  font-size: clamp(3rem, 10vw, 7rem);
+  font-weight: 900;
+  color: var(--neon);
+  text-shadow: 0 0 30px var(--neon), 0 0 60px rgba(0,255,65,0.3);
+  letter-spacing: 0.3em;
+  animation: splashPulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes splashPulse {
+  from { text-shadow: 0 0 20px var(--neon), 0 0 40px rgba(0,255,65,0.3); }
+  to   { text-shadow: 0 0 40px var(--neon), 0 0 80px rgba(0,255,65,0.5); }
+}
+
+.splash-sub {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  letter-spacing: 0.3em;
+}
+
+.splash-bar-track {
+  width: 280px;
+  height: 2px;
+  background: rgba(0,255,65,0.1);
+  position: relative;
+  overflow: hidden;
+}
+.splash-bar-fill {
+  height: 100%;
+  background: var(--neon);
+  box-shadow: 0 0 10px var(--neon);
+  animation: splashLoad 3.5s ease-out forwards;
+}
+@keyframes splashLoad {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+.splash-status {
+  font-size: 0.7rem;
+  color: var(--neon-dim);
+  letter-spacing: 0.2em;
+}
+
+/* ═══════════════════════════════════════════════
+   HOME PAGE
+═══════════════════════════════════════════════ */
+.home-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 1.5rem 3rem;
+  gap: 3rem;
+}
+
+.home-artifact {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.artifact-rings {
+  position: absolute;
+  inset: -40px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,255,65,0.1);
+  animation: rotate 20s linear infinite;
+}
+.artifact-rings::before {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,255,65,0.06);
+  animation: rotate 30s linear infinite reverse;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.artifact-box {
+  width: 180px;
+  height: 180px;
+  border: 1px solid var(--border-bright);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow:
+    0 0 40px var(--neon-glow),
+    inset 0 0 40px var(--neon-glow);
+}
+
+.artifact-box::before,
+.artifact-box::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--neon);
+  border-style: solid;
+}
+.artifact-box::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+.artifact-box::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+.artifact-title {
+  font-family: var(--cinzel);
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: var(--neon);
+  text-shadow: 0 0 20px var(--neon);
+  letter-spacing: 0.4em;
+}
+
+.home-hero {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.home-subtitle {
+  font-family: var(--cinzel);
+  font-size: clamp(1.1rem, 3vw, 1.6rem);
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.15em;
+}
+
+.home-desc {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  letter-spacing: 0.12em;
+  max-width: 380px;
+  line-height: 1.7;
+}
+
+.begin-btn {
+  margin-top: 0.8rem;
+  position: relative;
+  background: transparent;
+  border: 1px solid var(--neon);
+  color: var(--neon);
+  font-family: var(--cinzel);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  padding: 0.85rem 2.5rem;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s;
+  box-shadow: 0 0 20px var(--neon-glow);
+}
+.begin-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(0,255,65,0.12), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.5s;
+}
+.begin-btn:hover::before { transform: translateX(100%); }
+.begin-btn:hover {
+  background: rgba(0,255,65,0.08);
+  box-shadow: 0 0 40px var(--neon-glow), 0 0 80px rgba(0,255,65,0.1);
+}
+
+.home-coords {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+  opacity: 0.5;
+}
+
+/* ═══════════════════════════════════════════════
+   AUTH PAGE
+═══════════════════════════════════════════════ */
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 1.5rem;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 2.5rem;
+  position: relative;
+  box-shadow: 0 0 60px rgba(0,0,0,0.6);
+}
+
+/* corner accents */
+.auth-card::before,
+.auth-card::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-color: var(--neon);
+  border-style: solid;
+}
+.auth-card::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+.auth-card::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+.auth-back {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 1.5rem;
+  transition: color 0.2s;
+}
+.auth-back:hover { color: var(--neon); }
+
+.auth-title {
+  font-family: var(--cinzel);
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--neon);
+  text-shadow: 0 0 12px var(--neon);
+  letter-spacing: 0.2em;
+  margin-bottom: 0.5rem;
+}
+
+.auth-mode-line {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 0.12em;
+  margin-bottom: 2rem;
+  border-left: 2px solid var(--neon-dim);
+  padding-left: 0.8rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.field.full { grid-column: 1 / -1; }
+
+.field label {
+  font-size: 0.65rem;
+  color: var(--neon-dim);
+  letter-spacing: 0.18em;
+}
+
+.field input {
+  background: rgba(0,0,0,0.6);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  padding: 0.65rem 0.9rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+.field input:focus {
+  border-color: var(--neon-dim);
+  box-shadow: 0 0 12px rgba(0,255,65,0.1);
+}
+.field input::placeholder { color: var(--text-dim); opacity: 0.5; }
+
+.auth-error {
+  font-size: 0.75rem;
+  color: #ff6b6b;
+  letter-spacing: 0.08em;
+  padding: 0.6rem 0.8rem;
+  background: rgba(255,100,100,0.08);
+  border: 1px solid rgba(255,100,100,0.2);
+}
+
+.auth-success {
+  font-size: 0.75rem;
+  color: var(--neon);
+  letter-spacing: 0.08em;
+  padding: 0.6rem 0.8rem;
+  background: rgba(0,255,65,0.06);
+  border: 1px solid rgba(0,255,65,0.2);
+}
+
+.submit-btn {
+  width: 100%;
+  background: rgba(0,255,65,0.06);
+  border: 1px solid var(--neon);
+  color: var(--neon);
+  font-family: var(--cinzel);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  padding: 0.85rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  margin-top: 0.4rem;
+  position: relative;
+  overflow: hidden;
+}
+.submit-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(0,255,65,0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.4s;
+}
+.submit-btn:hover::before { transform: translateX(100%); }
+.submit-btn:hover:not(:disabled) {
+  background: rgba(0,255,65,0.12);
+  box-shadow: 0 0 20px var(--neon-glow);
+}
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.auth-toggle {
+  margin-top: 1.5rem;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  text-align: center;
+  letter-spacing: 0.08em;
+}
+.auth-toggle span {
+  color: var(--neon-dim);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.auth-toggle span:hover { color: var(--neon); }
+
+/* ═══════════════════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════════════════ */
+.dashboard-wrapper {
+  min-height: 100vh;
+  padding-top: 56px;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: calc(100vh - 56px);
+}
+
+.sidebar {
+  border-right: 1px solid var(--border);
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: rgba(0, 8, 2, 0.6);
+}
+
+.sidebar-status {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.65rem;
+  color: var(--neon);
+  letter-spacing: 0.18em;
+  margin-bottom: 0.5rem;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--neon);
+  box-shadow: 0 0 6px var(--neon);
+  animation: blink 2s ease-in-out infinite;
+}
+
+.sidebar-name {
+  font-family: var(--cinzel);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--neon);
+  text-shadow: 0 0 8px var(--neon);
+  word-break: break-all;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0.5rem 0;
+}
+
+.sidebar-info {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  line-height: 2;
+}
+
+.sidebar-info span {
+  color: var(--text);
+  display: block;
+}
+
+.submitted-badge {
+  margin-top: auto;
+  padding: 0.6rem 0.8rem;
+  background: rgba(0,255,65,0.08);
+  border: 1px solid rgba(0,255,65,0.3);
+  font-size: 0.65rem;
+  color: var(--neon);
+  letter-spacing: 0.12em;
+  text-align: center;
+}
+
+/* ── Intel / Main Panel ── */
+.intel-panel {
+  padding: 2.5rem;
+  overflow-y: auto;
+}
+
+.panel-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.panel-title {
+  font-family: var(--cinzel);
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--neon);
+  text-shadow: 0 0 10px var(--neon);
+  letter-spacing: 0.2em;
+}
+
+.panel-sub {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+  margin-top: 0.3rem;
+}
+
+.final-submit-btn {
+  background: transparent;
+  border: 1px solid var(--neon);
+  color: var(--neon);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  padding: 0.6rem 1.4rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+.final-submit-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(0,255,65,0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.4s;
+}
+.final-submit-btn:hover::before { transform: translateX(100%); }
+.final-submit-btn:hover {
+  background: rgba(0,255,65,0.08);
+  box-shadow: 0 0 16px var(--neon-glow);
+}
+.final-submit-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Clue Cards ── */
+.clues-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.clue-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  position: relative;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.clue-card:hover {
+  border-color: rgba(0,255,65,0.4);
+  box-shadow: 0 0 20px rgba(0,255,65,0.06);
+}
+
+.clue-number {
+  font-size: 0.65rem;
+  color: var(--neon-dim);
+  letter-spacing: 0.2em;
+  margin-bottom: 0.6rem;
+  display: block;
+}
+
+.clue-text {
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 0;
+}
+
+.no-clues {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 3rem;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+}
+
+.loading-screen {
+  min-height: calc(100vh - 56px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.loading-text {
+  font-size: 0.8rem;
+  color: var(--neon-dim);
+  letter-spacing: 0.25em;
+  animation: blink 1.2s step-end infinite;
+}
+
+/* ═══════════════════════════════════════════════
+   ANSWER POPUP OVERLAY
+═══════════════════════════════════════════════ */
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  backdrop-filter: blur(4px);
+}
+
+.popup-card {
+  background: rgba(4, 12, 4, 0.98);
+  border: 1px solid var(--border-bright);
+  width: 100%;
+  max-width: 500px;
+  padding: 2.5rem;
+  position: relative;
+  box-shadow: 0 0 80px rgba(0,255,65,0.15);
+}
+
+.popup-card::before,
+.popup-card::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: var(--neon);
+  border-style: solid;
+}
+.popup-card::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+.popup-card::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+.popup-title {
+  font-family: var(--cinzel);
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--neon);
+  text-shadow: 0 0 12px var(--neon);
+  letter-spacing: 0.22em;
+  margin-bottom: 0.5rem;
+}
+
+.popup-note {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  line-height: 1.7;
+  margin-bottom: 1.8rem;
+  border-left: 2px solid var(--neon-dim);
+  padding-left: 0.8rem;
+}
+
+.popup-note strong {
+  color: var(--neon-dim);
+}
+
+.popup-input {
+  display: block;
+  width: 100%;
+  background: rgba(0,0,0,0.7);
+  border: 1px solid var(--border);
+  color: var(--neon);
+  font-family: var(--mono);
+  font-size: 1rem;
+  padding: 0.8rem 1rem;
+  outline: none;
+  letter-spacing: 0.12em;
+  margin-bottom: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.popup-input:focus {
+  border-color: var(--neon-dim);
+  box-shadow: 0 0 16px rgba(0,255,65,0.12);
+}
+.popup-input::placeholder { color: var(--text-dim); opacity: 0.4; }
+
+.popup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.popup-submit-btn {
+  width: 100%;
+  background: rgba(0,255,65,0.08);
+  border: 1px solid var(--neon);
+  color: var(--neon);
+  font-family: var(--cinzel);
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  padding: 0.9rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+.popup-submit-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(0,255,65,0.12), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.4s;
+}
+.popup-submit-btn:hover::before { transform: translateX(100%); }
+.popup-submit-btn:hover:not(:disabled) {
+  background: rgba(0,255,65,0.15);
+  box-shadow: 0 0 24px var(--neon-glow);
+}
+.popup-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.popup-abort-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  text-align: center;
+  width: 100%;
+  transition: color 0.2s;
+}
+.popup-abort-btn:hover { color: #ff6b6b; }
+
+.popup-error {
+  font-size: 0.73rem;
+  color: #ff6b6b;
+  letter-spacing: 0.08em;
+  padding: 0.5rem 0.7rem;
+  background: rgba(255,100,100,0.07);
+  border: 1px solid rgba(255,100,100,0.2);
+  margin-bottom: 0.8rem;
+}
+
+.popup-confirmed {
+  text-align: center;
+  padding: 1.5rem 0;
+}
+.popup-confirmed-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.8rem;
+  display: block;
+  color: var(--neon);
+  text-shadow: 0 0 20px var(--neon);
+}
+.popup-confirmed-text {
+  font-family: var(--cinzel);
+  font-size: 1rem;
+  color: var(--neon);
+  letter-spacing: 0.2em;
+}
+.popup-confirmed-sub {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  margin-top: 0.4rem;
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .dashboard-wrapper {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem;
+  }
+  .intel-panel { padding: 1.5rem; }
+  .navbar { padding: 0 1rem; }
+  .panel-header { flex-direction: column; align-items: flex-start; }
+}
+</file>
+
+<file path="src/App.jsx">
+import { useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import "./App.css";
+
+import About from "./pages/About";
+import SplashScreen from "./components/SplashScreen";
+import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
+import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
+import Leaderboard from "./pages/Leaderboard";
+
+// Protected Route Wrapper - Kicks unauthenticated users to login
+const ProtectedRoute = ({ children }) => {
+  const { token, loading } = useAuth();
+  if (loading) return null;
+  return token ? children : <Navigate to="/login" />;
+};
+
+// Public Route Wrapper - Kicks logged-in users straight to the dashboard
+const PublicRoute = ({ children }) => {
+  const { token, loading } = useAuth();
+  if (loading) return null;
+  return !token ? children : <Navigate to="/dashboard" />;
+};
+
+const AppContent = () => {
+  const [splashDone, setSplashDone] = useState(false);
+  const { token, user, logout } = useAuth();
+
+  // ── Splash Screen ────────────────────────────
+  if (!splashDone) {
+    return <SplashScreen onFinished={() => setSplashDone(true)} />;
+  }
+
+  // ── Main Layout ──────────────────────────────
+  return (
+    <div className="app-shell">
+      {/* Ambient background layers */}
+      <div className="bg-grid" aria-hidden="true" />
+      <div className="bg-vignette" aria-hidden="true" />
+      <div className="bg-scanline" aria-hidden="true" />
+
+      <Navbar isLoggedIn={!!token} userName={user?.zealId} onLogout={logout} />
+
+      <main className="app-content">
+        <Routes>
+          {/* Public Routes */}
+          <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <Home />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Auth mode="login" />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <Auth mode="register" />
+              </PublicRoute>
+            }
+          />
+          {/* Protected Area */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          {/* Unrestricted Pages */}
+          <Route path="/about" element={<About />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />s{" "}
+        </Routes>
+      </main>
+    </div>
+  );
+};
+
+function App() {
+  return (
+    // The AuthProvider must wrap the Router so navigation guards can access the state
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
+  );
+}
+
+export default App;
+</file>
+
+<file path="src/config.js">
+export const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5005";
+</file>
+
+<file path="src/index.css">
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --neon:       #00ff41;
+  --neon-dim:   #00aa2b;
+  --neon-glow:  rgba(0, 255, 65, 0.15);
+  --bg:         #070a07;
+  --bg-card:    rgba(0, 18, 4, 0.85);
+  --border:     rgba(0, 255, 65, 0.25);
+  --border-bright: rgba(0, 255, 65, 0.7);
+  --text:       #c8ffd4;
+  --text-dim:   #5a8c62;
+  --mono:       'Share Tech Mono', 'Courier New', monospace;
+  --cinzel:     'Cinzel', serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ── Scrollbar ────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--neon-dim); border-radius: 3px; }
+
+/* ── Utility ──────────────────────────────────── */
+.cinzel { font-family: var(--cinzel); }
+
+.neon-text {
+  color: var(--neon);
+  text-shadow: 0 0 8px var(--neon), 0 0 20px rgba(0, 255, 65, 0.4);
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.2; }
+}
+.blink { animation: blink 1.2s step-end infinite; }
+
+@keyframes scanline {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+</file>
+
+<file path="src/main.jsx">
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.jsx'
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+</file>
+
+<file path="index.html">
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LOOT — The Grand Hunt</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+</file>
+
+<file path="package.json">
+{
+  "name": "loot-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.14.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^5.0.0"
+  }
+}
+</file>
+
+<file path="vite.config.js">
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+  },
+})
+</file>
+
+</files>
